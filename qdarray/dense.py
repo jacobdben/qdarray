@@ -56,6 +56,14 @@ class DotArray():
         
         self.ndots = ndots
         self.ens = energies
+        
+        zeeman = np.array(zeeman)
+        
+        if len(zeeman.shape) == 1:
+            zeeman = np.tile(zeeman, (2,1)).T / 2
+        assert len(zeeman.shape) == 2 and zeeman.shape[1] == 2, "Error: Bad zeeman shape"
+            
+        
         self.EZs = zeeman
         self.ts = np.array(hoppings)[:,0]
         self.tsos = np.array(hoppings)[:,1]
@@ -70,11 +78,12 @@ class DotArray():
         self.pos = [ np.identity(4**n) for n in range(ndots) ]
         
         # Get parity indices
-        parities = np.array([1,-1,-1,1])
-        for n in range(ndots-1):
-            parities = np.kron(np.array([1,-1,-1,1]), parities)
-            
-            
+        parities = np.identity(1)
+
+        for n in range(ndots):
+            parities = np.kron( np.array([1,-1,-1,1]), parities)
+        parities = parities[0]
+
         self.index_even = np.where(parities==1)[0]
         self.index_odd = np.where(parities==-1)[0]
         
@@ -83,12 +92,12 @@ class DotArray():
     
     # Up spin creation operator
     def cpu(self, n):
-        parity_factors = np.diag( (-1)**np.sum( np.array(self.occupations)[:,0:2*(n-1)], axis=1 ) )
+        parity_factors = np.diag( (-1)**np.sum( np.array(self.occupations)[:,0:2*(n+1)-1], axis=1 ) )
         return np.kron( self.pos[n], np.kron( cpu_mat, self.pos[self.ndots-1-n] ) ) @ parity_factors
 
     # Down spin creation operator
     def cpd(self, n):
-        parity_factors = np.diag( (-1)**np.sum( np.array(self.occupations)[:,0:2*(n-1)-1], axis=1 ) )
+        parity_factors = np.diag( (-1)**np.sum( np.array(self.occupations)[:,0:2*(n+1)-2], axis=1 ) )
         return np.kron( self.pos[n], np.kron( cpd_mat, self.pos[self.ndots-1-n] ) ) @ parity_factors
 
     # Up spin destruction operator
@@ -107,9 +116,9 @@ class DotArray():
     def make_hamiltonian(self):
         
         # Dot energies
-        ham = self.dia(np.diag([0, self.ens[0]+self.EZs[0]/2, self.ens[0]-self.EZs[0]/2, 2*self.ens[0]+self.Us[0]]),0)
-        for n in range(1, self.ndots):
-            ham += self.dia(np.diag([0, self.ens[n]+self.EZs[n]/2, self.ens[n]-self.EZs[n]/2, 2*self.ens[n]+self.Us[n]]),n)
+        ham = 0
+        for n in range(self.ndots):
+            ham += self.dia(np.diag([0, self.ens[n]-self.EZs[n,0], self.ens[n]+self.EZs[n,1], 2*self.ens[n]-self.EZs[n,0]+self.EZs[n,1]+self.Us[n]]),n)
 
         # Spin conserving hopping
         for n in range(0, self.ndots-1):
@@ -168,3 +177,23 @@ class DotArray():
         eigo, veco = eigh(self.get_odd_ham() + detune_odd, eigvals_only=False)
         
         return vece, veco
+    
+    def get_eigvals_and_eigvecs(self, detunings=None):
+        
+        if detunings == None:
+            detunings = [0 for i in range(self.ndots)]
+            
+        assert len(detunings) == self.ndots, "Error: Wrong number of detunings"
+        
+        ham_det = detunings[0]*self.dia(np.diag([0, 1, 1, 2]), 0)
+        for n in range(1, self.ndots):
+            ham_det += detunings[n]*self.dia(np.diag([0, 1, 1, 2]), n)
+
+        detune_even = ham_det[self.index_even,:][:,self.index_even]
+        detune_odd = ham_det[self.index_odd,:][:,self.index_odd]
+        
+        
+        eige, vece = eigh(self.get_even_ham() + detune_even, eigvals_only=False)
+        eigo, veco = eigh(self.get_odd_ham() + detune_odd, eigvals_only=False)
+        
+        return eige, vece, eigo, veco
