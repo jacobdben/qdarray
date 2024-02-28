@@ -140,7 +140,7 @@ class DotArray():
     def get_odd_ham(self):
         return self.ham[self.index_odd,:][:,self.index_odd]
     
-    def get_eigvals(self, detunings=None):
+    def get_eigvals(self, k=0, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -156,9 +156,11 @@ class DotArray():
         eige = eigh(self.get_even_ham() + detune_even, eigvals_only=True)
         eigo = eigh(self.get_odd_ham() + detune_odd, eigvals_only=True)
         
+        if k > 0:
+            return eige[:k], eigo[:k]
         return eige, eigo
 
-    def get_eigvecs(self, detunings=None):
+    def get_eigvecs(self, k=0, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -176,9 +178,11 @@ class DotArray():
         eige, vece = eigh(self.get_even_ham() + detune_even, eigvals_only=False)
         eigo, veco = eigh(self.get_odd_ham() + detune_odd, eigvals_only=False)
         
+        if k > 0:
+            return vece[:,:k], veco[:,:k]
         return vece, veco
     
-    def get_eigvals_and_eigvecs(self, detunings=None):
+    def get_eigvals_and_eigvecs(self, k=0, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -196,4 +200,6 @@ class DotArray():
         eige, vece = eigh(self.get_even_ham() + detune_even, eigvals_only=False)
         eigo, veco = eigh(self.get_odd_ham() + detune_odd, eigvals_only=False)
         
+        if k > 0:
+            return eige[:k], vece[:,:k], eigo[:k], veco[:,:k]
         return eige, vece, eigo, veco
