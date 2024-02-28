@@ -84,7 +84,7 @@ class DotArray():
         parities = np.identity(1)
 
         for n in range(ndots):
-            parities = sparse.kron( np.array([1,-1,-1,1]), parities)
+            parities = np.kron( np.array([1,-1,-1,1]), parities)
         parities = parities[0]
 
         self.index_even = np.where(parities==1)[0]
@@ -143,7 +143,7 @@ class DotArray():
     def get_odd_ham(self):
         return self.ham[self.index_odd,:][:,self.index_odd]
     
-    def get_eigvals(self, k=2, detunings=None):
+    def get_eigvals(self, k=1, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -159,9 +159,9 @@ class DotArray():
         eige = sparse.linalg.eigsh(self.get_even_ham() + detune_even, k=k, return_eigenvectors=False, which='SA')
         eigo = sparse.linalg.eigsh(self.get_odd_ham() + detune_odd, k=k, return_eigenvectors=False, which='SA')
         
-        return eige, eigo
+        return np.sort(eige), np.sort(eigo)
 
-    def get_eigvecs(self, k=2, detunings=None):
+    def get_eigvecs(self, k=1, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -179,9 +179,9 @@ class DotArray():
         eige, vece = sparse.linalg.eigsh(self.get_even_ham() + detune_even, k=k, return_eigenvectors=True, which='SA')
         eigo, veco = sparse.linalg.eigsh(self.get_odd_ham() + detune_odd, k=k, return_eigenvectors=True, which='SA')
         
-        return vece, veco
+        return vece[:,np.argsort(eige)], veco[:,np.argsort(eigo)]
     
-    def get_eigvals_and_eigvecs(self, k=2, detunings=None):
+    def get_eigvals_and_eigvecs(self, k=1, detunings=None):
         
         if detunings == None:
             detunings = [0 for i in range(self.ndots)]
@@ -199,5 +199,5 @@ class DotArray():
         eige, vece = sparse.linalg.eigsh(self.get_even_ham() + detune_even, k=k, return_eigenvectors=True, which='SA')
         eigo, veco = sparse.linalg.eigsh(self.get_odd_ham() + detune_odd, k=k, return_eigenvectors=True, which='SA')
         
-        return eige, vece, eigo, veco
+        return np.sort(eige), vece[:,np.argsort(eige)], np.sort(eigo), veco[:,np.argsort(eigo)]
 
