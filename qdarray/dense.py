@@ -142,7 +142,7 @@ class DotArray():
     
     def get_eigvals(self, k=0, detunings=None):
         
-        if detunings == None:
+        if detunings is None:
             detunings = [0 for i in range(self.ndots)]
         assert len(detunings) == self.ndots, "Error: Wrong number of detunings"
         
@@ -162,7 +162,7 @@ class DotArray():
 
     def get_eigvecs(self, k=0, detunings=None):
         
-        if detunings == None:
+        if detunings is None:
             detunings = [0 for i in range(self.ndots)]
             
         assert len(detunings) == self.ndots, "Error: Wrong number of detunings"
@@ -184,7 +184,7 @@ class DotArray():
     
     def get_eigvals_and_eigvecs(self, k=0, detunings=None):
         
-        if detunings == None:
+        if detunings is None:
             detunings = [0 for i in range(self.ndots)]
             
         assert len(detunings) == self.ndots, "Error: Wrong number of detunings"
