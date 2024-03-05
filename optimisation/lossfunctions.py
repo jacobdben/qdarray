@@ -3,7 +3,7 @@
 """
 Created on Wed Feb 28 14:45:43 2024
 
-@author: jacob
+@author: Jacob Benestad
 """
 
 import numpy as np
@@ -99,4 +99,38 @@ class EsplitLoss():
 
         
         return self.sensormix(d1_loss, d2_loss) + self.l2_*np.sum(X**2)
+    
+
+class MajoranaQuality():
         
+    def __init__(self, dot_array):
+        
+        self.dot_array = dot_array
+        
+    def dE(self, X):
+        eige, eigo = self.dot_array.get_eigvals(detunings=X, k=2)
+        return abs(eige[0]-eigo[0])
+        
+    def MP(self, X):
+        
+        mps = []
+
+        vece, veco = self.dot_array.get_eigvecs(detunings=X)
+        
+        
+        even = np.zeros(2*vece.shape[0], dtype=np.complex128)
+        odd = np.zeros(2*veco.shape[0], dtype=np.complex128)
+        
+        np.put(even,self.dot_array.index_even,vece[:,0])
+        np.put(odd,self.dot_array.index_odd,veco[:,0])
+        
+        for n in [0, self.dot_array.ndots-1]:
+            
+            wu = odd @ ( self.dot_array.cpu(n) + self.dot_array.cmu(n) ) @ even
+            zu = odd @ ( self.dot_array.cpu(n) - self.dot_array.cmu(n) ) @ even
+            wd = odd @ ( self.dot_array.cpd(n) + self.dot_array.cmd(n) ) @ even
+            zd = odd @ ( self.dot_array.cpd(n) - self.dot_array.cmd(n) ) @ even
+            
+            mps.append( (wu**2-zu**2+wd**2-zd**2)/(wu**2+zu**2+wd**2+zd**2) )
+        
+        return (np.abs(mps[0]) + np.abs(mps[1])) / 2
