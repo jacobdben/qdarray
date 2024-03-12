@@ -90,6 +90,7 @@ def parallel_cma(fmin, starting_point, sigma0, runid, options, other_metrics=Non
     iteration=1
     while not es.stop(ignore_list=['tolfun']):
         solutions=es.ask()
+        solutions = [solutions[i]+starting_point for i in range(len(solutions))]
     
         with ProcessPoolExecutor(options['popsize']) as executor:
             results = list(executor.map(fmin, solutions))
@@ -103,7 +104,7 @@ def parallel_cma(fmin, starting_point, sigma0, runid, options, other_metrics=Non
             
             
             if not es.countiter%10:
-                ss = str(solutions[np.argmin(results)])
+                ss = str(solutions[np.argmin(results)]-starting_point)
                 for key, res in other_metrics_res.items():
                     ss += ' ' + key + ': ' + str(res[np.argmin(results)])     
                 print(ss, flush=True)

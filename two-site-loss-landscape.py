@@ -51,7 +51,7 @@ def LossMap(LR_detunings, SC_detunings):
     for i in tqdm(range(LR_detunings.shape[0])):
         for j in range(SC_detunings.shape[0]):
             
-            loss_map[i,j] = loss.prada_clarke([LR_detunings[i], SC_detunings[j], LR_detunings[i]])
+            loss_map[i,j] = loss.prada_clarke2([LR_detunings[i], SC_detunings[j], LR_detunings[i]])
             
     return loss_map
 
@@ -62,10 +62,11 @@ sweep_s = np.linspace(s_bound[0],s_bound[1],100)
 sweep_lr = np.linspace(lr_bound[0],lr_bound[1],100)
 
 #loss_map = LossMap(sweep_lr, sweep_s)
-#np.save("two-site-prada-lossmap.npy", loss_map)
+#np.save("two-site-prada2-lossmap.npy", loss_map)
 
-#loss_map = np.load("two-site-max-lossmap.npy")
-loss_map = np.load("two-site-prada-lossmap.npy")
+loss_map = np.load("two-site-max-lossmap.npy")
+#loss_map = np.load("two-site-prada-lossmap.npy")
+#loss_map = np.load("two-site-prada2-lossmap.npy")
 
 
 
@@ -73,10 +74,17 @@ min_index = np.unravel_index(loss_map.argmin(), loss_map.shape)
 
 
 plt.figure(figsize=(10,6))
+#plt.suptitle(r'$L=\sqrt{(\varepsilon_{-}^M/\varepsilon_{-}^D)^2 \sin^2(\theta_L/2) + (\varepsilon_{+}^M/\varepsilon_{+}^D )^2 \cos^2(\theta_L/2)}$', fontsize=20)
+#plt.suptitle(r'$L=\sqrt{(\varepsilon_{-}^M/\varepsilon_{-}^D)^2 + (\varepsilon_{+}^M/\varepsilon_{+}^D)^2}$', fontsize=20)
+plt.suptitle(r'$L=max(dE_{eo})$', fontsize=20)
 im = plt.imshow(loss_map, origin='lower', interpolation=None,
           extent=[s_bound[0], s_bound[1], lr_bound[0], lr_bound[1]])
 
 plt.plot(sweep_s[min_index[1]], sweep_lr[min_index[0]], ls='', marker='x', color='r')
 cb = plt.colorbar(im, fraction=0.0185)
 cb.ax.set_yscale('linear')
+plt.xlabel(r'$\varepsilon_C$', fontsize=16)
+plt.ylabel(r'$\varepsilon_L$, $\varepsilon_R$', fontsize=16)
+plt.tight_layout()
+#plt.savefig('two-site-prada2-lossmap.png')
 plt.show()
