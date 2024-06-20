@@ -104,7 +104,11 @@ def parallel_cma(fmin, starting_point, sigma0, runid, options, other_metrics=Non
             
             
             if not es.countiter%10:
+<<<<<<< HEAD
+                ss = str(solutions[np.argmin(results)]-starting_point)
+=======
                 ss = str(solutions[np.argmin(results)]+starting_point)
+>>>>>>> 949b204 (Small fixes on the cluster)
                 for key, res in other_metrics_res.items():
                     ss += ' ' + key + ': ' + str(res[np.argmin(results)])     
                 print(ss, flush=True)

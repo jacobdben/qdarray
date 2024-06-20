@@ -207,6 +207,7 @@ class MajoranaQuality():
             mps.append( (wu**2-zu**2+wd**2-zd**2)/(wu**2+zu**2+wd**2+zd**2) )
         
         return (np.abs(mps[0]) + np.abs(mps[1])) / 2
+<<<<<<< HEAD
     
     
     def plot(self, X):
